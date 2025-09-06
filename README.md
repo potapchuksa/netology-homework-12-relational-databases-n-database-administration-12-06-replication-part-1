@@ -37,6 +37,93 @@
 
 ### Решение
 
+1. Поднимем два контейнера в одной сети
+
+```Bash
+docker network create replication
+docker run -d --name replication-master --network replication -e MYSQL_ROOT_PASSWORD=123456 mysql:8.3
+docker run -d --name replication-slave --network replication -e MYSQL_ROOT_PASSWORD=123456 mysql:8.3
+```
+
+![](img/img-02-01.png)
+
+2. Добавим мастеру пользователя для слейва, дадим ему права и проверим
+
+```Bash
+docker exec -it replication-master mysql -p
+```
+
+```sql
+CREATE USER 'replication'@'%';
+GRANT REPLICATION SLAVE ON *.* TO 'replication'@'%';
+SHOW GRANTS FOR replication@'%';
+```
+
+![](img/img-02-02.png)
+
+3. Настрим мастер. Скопируем файл /etc/my.cnf из контейнера, отредактируем, отправим обратно, перезапустим контейнер и проверим статус мастера.
+
+```bash
+docker cp replication-master:/etc/my.cnf ./
+nano my.cnf
+```
+
+```
+# добавим в секцию [mysqld]
+server_id = 1
+log_bin = mysql-bin
+```
+
+```Bash
+docker cp my.cnf replication-master:/etc/
+docker exec -it replication-master mysql -p
+```
+
+```sql
+SHOW MASTER STATUS;
+```
+
+![](img/img-02-03.png)
+
+4. Настроим реплику таким же образом /etc/my.cnf
+
+```
+docker cp replication-slave:/etc/my.cnf ./
+nano my.cnf
+```
+
+```
+# добавим в секцию [mysqld]
+server_id = 2
+read_only = 1
+```
+
+```Bash
+docker cp my.cnf replication-slave:/etc/
+docker restart replication-slave
+docker exec -it replication-slave mysql -p
+```
+
+![](img/img-02-04.png)
+
+```sql
+CHANGE MASTER TO
+    MASTER_HOST='replication-master',
+    MASTER_USER='replication';
+START SLAVE;
+SHOW SLAVE STATUS;
+```
+
+![](img/img-02-05.png)
+
+![](img/img-02-06.png)
+
+5. Проверяем.
+
+![](img/img-02-07.png)
+
+![](img/img-02-08.png)
+
 ---
 
 ## Дополнительные задания (со звёздочкой*)
