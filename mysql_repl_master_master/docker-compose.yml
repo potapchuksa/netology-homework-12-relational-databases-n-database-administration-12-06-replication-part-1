@@ -1,0 +1,21 @@
+services:
+  master-1:
+    image: mysql:8.3
+    container_name: master-1
+    env_file: .env
+    volumes:
+      - ./master_1/my.cnf:/etc/my.cnf
+      - ./master_1/init_m1.sql:/docker-entrypoint-initdb.d/start.sql
+    ports:
+      - 3307:3306
+
+  master-2:
+    image: mysql:8.3
+    container_name: master-2
+    env_file: .env
+    volumes:
+      - ./master_2/my.cnf:/etc/my.cnf
+      - ./master_2/init_m2.sql:/docker-entrypoint-initdb.d/start.sql
+    ports:
+      - 3308:3306
+

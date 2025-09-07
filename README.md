@@ -138,3 +138,22 @@ SHOW SLAVE STATUS;
 *Приложите скриншоты конфигурации, выполнения работы: состояния и режимы работы серверов.*
 
 ### Решение
+
+1. Подниму [проект](mysql_repl_master_master) через docker-compose
+
+```Bash
+docker compose up -d
+```
+
+2. Проверка
+
+![](img/img-03-01.png)
+
+![](img/img-03-02.png)
+
+![](img/img-03-03.png)
+
+![](img/img-03-04.png)
+
+![](img/img-03-05.png)
+
